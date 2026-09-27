@@ -35,9 +35,11 @@ pipeline {
         stage("deploy") {
             steps {
                 script {
-                    def dockerCmd = 'docker run -p 8080:8080 -d titobid/jenkins-app:1.0'
+                    def shellCmd = 'bash ./server-cmds.sh ${IMAGE_NAME}'
                     sshagent(['ec2-server-key']) {
-                       sh "ssh -o StrictHostKeyChecking=no ec2-user@34.228.161.225 ${dockerCmd}"      
+                       sh "scp docker-compose.yaml ec2-user@34.228.161.225:/home/ec2-user"
+                       sh "scp server-cmds.sh ec2-user@34.228.161.225:/home/ec2-user"
+                       sh "ssh -o StrictHostKeyChecking=no ec2-user@34.228.161.225 ${shellCmd}" 
                     }
                 }
             }
