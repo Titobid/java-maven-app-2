@@ -12,10 +12,19 @@ pipeline {
     tools {
         maven 'maven'
     }
-    environment {
-        IMAGE_NAME= 'titobid/jenkins-app:java-maven-1.0'
-    }
     stages {
+        stage('increment version') {
+            steps {
+                script {
+                    echo 'incrementing app version'
+                    sh 'mvn build-helper:parse-version versions:set\
+                        -DnewVersion=\\\${parsedVersion.majorVersion}.\\\${parsedVersion.minorVersion}.\\\${parsedVersion.nextIncrementalversion} versions:commit'
+                    def matcher = readFile('pom.xml') =~ '<version>(.+)</version>'
+                    def version = matcher[0][1]
+                    env.IMAGE_NAME = "$version-$BUILD_NUMBER"
+                }
+            }
+        }
         stage('build app') {
             steps {
                 echo 'building application jar...'
@@ -43,6 +52,17 @@ pipeline {
                     }
                 }
             }
-        }               
+        }
+        stage('commit version update') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsID: 'git-hub', passwordVariable:'PASS', usernameVariable: 'USER')])
+                    sh 'git remote set-url origin https:$USER:$PASS@github.com/Titobid/jenkins-project-08.git'
+                    sh 'git add .'
+                    sh 'git commit -m "ci: version bump"'
+                    sh 'git push origin Head:jenkins-jobs'
+                }
+            }
+        }   
     }
 } 
