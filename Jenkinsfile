@@ -56,11 +56,11 @@ pipeline {
         stage('commit version update') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsID: 'git-hub', passwordVariable:'PASS', usernameVariable: 'USER')]){
-                    sh 'git remote set-url origin https:$USER:$PASS@github.com/Titobid/jenkins-project-08.git'
+                    withCredentials([usernamePassword(credentialsId: 'git-hub', passwordVariable:'PASS', usernameVariable: 'USER')]){
+                    sh 'git remote set-url origin https://$USER:$PASS@github.com/Titobid/jenkins-project-08.git'
                     sh 'git add .'
                     sh 'git commit -m "ci: version bump"'
-                    sh 'git push origin Head:jenkins-jobs'
+                    sh 'git push origin HEAD:jenkins-jobs'
                     }
                 }
             }
